@@ -1,0 +1,58 @@
+<!-- templates/emails/new-resource.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Opportunity Available</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+        .container { max-width: 600px; margin: 0 auto; background-color: white; }
+        .header { background: linear-gradient(135deg, #10b981 0%, #047857 100%); padding: 40px 20px; text-align: center; color: white; }
+        .content { padding: 40px 30px; }
+        .resource-card { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 25px; border-radius: 12px; margin: 25px 0; border: 1px solid #bae6fd; }
+        .resource-title { color: #0c4a6e; font-size: 20px; font-weight: bold; margin: 0 0 10px 0; }
+        .resource-meta { color: #0369a1; font-size: 14px; margin: 5px 0; }
+        .btn { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); }
+        .btn:hover { transform: translateY(-2px); }
+        .footer { background-color: #f8fafc; padding: 20px; text-align: center; color: #6b7280; font-size: 12px; }
+        .type-badge { display: inline-block; background-color: #3b82f6; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 New Opportunity Available!</h1>
+        </div>
+        <div class="content">
+            <h2>Hi {{userName}},</h2>
+            <p>Great news! A new <strong>{{resourceType}}</strong> opportunity has just been posted that might interest you.</p>
+            
+            <div class="resource-card">
+                <div class="type-badge">{{resourceType}}</div>
+                <h3 class="resource-title">{{resourceTitle}}</h3>
+                <div class="resource-meta">🏢 <strong>Company:</strong> {{company}}</div>
+                <div class="resource-meta">📍 <strong>Location:</strong> {{location}}</div>
+                <div class="resource-meta">📅 <strong>Deadline:</strong> {{deadline}}</div>
+                
+                <p style="color: #374151; margin: 15px 0 0 0; line-height: 1.6;">{{resourceDescription}}</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{resourceUrl}}" class="btn">View & Apply Now</a>
+            </div>
+
+            <p><strong>💡 Pro Tip:</strong> Applications are reviewed on a first-come, first-served basis. Don't wait too long to apply!</p>
+            
+            <p>You can manage your notification preferences in your <a href="{{dashboardUrl}}/profile">profile settings</a>.</p>
+            
+            <p>Best of luck with your application!</p>
+            <p>The Career Reach Hub Team</p>
+        </div>
+        <div class="footer">
+            <p>© 2024 Career Reach Hub. All rights reserved.</p>
+            <p><a href="{{dashboardUrl}}/profile">Manage Email Preferences</a> | <a href="#">Unsubscribe</a></p>
+        </div>
+    </div>
+</body>
+</html>

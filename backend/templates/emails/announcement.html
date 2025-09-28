@@ -1,0 +1,57 @@
+<!-- templates/emails/announcement.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Important Announcement</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+        .container { max-width: 600px; margin: 0 auto; background-color: white; }
+        .header { padding: 30px 20px; text-align: center; }
+        .header.low { background-color: #6b7280; color: white; }
+        .header.medium { background-color: #3b82f6; color: white; }
+        .header.high { background-color: #f59e0b; color: white; }
+        .header.urgent { background-color: #ef4444; color: white; }
+        .content { padding: 40px 30px; }
+        .priority-badge { display: inline-block; padding: 6px 12px; border-radius: 16px; font-weight: bold; text-transform: uppercase; font-size: 11px; margin: 10px 0; }
+        .priority-badge.low { background-color: #f3f4f6; color: #374151; }
+        .priority-badge.medium { background-color: #dbeafe; color: #1e40af; }
+        .priority-badge.high { background-color: #fef3c7; color: #d97706; }
+        .priority-badge.urgent { background-color: #fee2e2; color: #dc2626; }
+        .btn { display: inline-block; padding: 15px 30px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+        .announcement-content { background-color: #f8fafc; padding: 25px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6; line-height: 1.7; }
+        .footer { background-color: #f8fafc; padding: 20px; text-align: center; color: #6b7280; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header {{priority}}">
+            <h1>📢 Important Announcement</h1>
+        </div>
+        <div class="content">
+            <h2>Hi {{userName}},</h2>
+            
+            <div class="priority-badge {{priority}}">{{priority}} Priority</div>
+            
+            <h3>{{announcementTitle}}</h3>
+            
+            <div class="announcement-content">
+                <p>{{announcementContent}}</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{dashboardUrl}}" class="btn">Go to Dashboard</a>
+            </div>
+
+            <p>Stay updated with the latest news and opportunities on your dashboard.</p>
+            
+            <p>Best regards,<br>The Career Reach Hub Team</p>
+        </div>
+        <div class="footer">
+            <p>© 2024 Career Reach Hub. All rights reserved.</p>
+            <p><a href="{{dashboardUrl}}/profile">Manage Email Preferences</a> | <a href="#">Unsubscribe</a></p>
+        </div>
+    </div>
+</body>
+</html>
