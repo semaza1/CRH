@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Navbar from '../components/layout/Navbar'
 import { 
   ArrowRight, 
   Star,
@@ -99,6 +100,7 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Video Hero Section */}
+      <Navbar />
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Video Background */}
         <video 
@@ -137,11 +139,13 @@ const Home = () => {
           
           {!isAuthenticated ? (
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 text-lg font-semibold shadow-lg rounded-lg transition-colors flex items-center justify-center">
+              <button onClick={() => window.location.href = '/register'}
+              className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 text-lg font-semibold shadow-lg rounded-lg transition-colors flex items-center justify-center">
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5" />
               </button>
-              <button className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 text-lg font-semibold rounded-lg transition-colors">
+              <button onClick={() => window.location.href = '/login'}
+              className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 text-lg font-semibold rounded-lg transition-colors">
                 Sign In
               </button>
             </div>
