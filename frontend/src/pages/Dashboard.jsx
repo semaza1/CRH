@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp, 
   Clock, 
@@ -28,7 +29,8 @@ import Alert from '../components/ui/Alert';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const Dashboard = () => {
-  const { user, api } = useAuth();
+  const { user, api, logout } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
@@ -252,12 +254,22 @@ const Dashboard = () => {
               Ready to take the next step in your career journey?
             </p>
           </div>
-          {unreadCount > 0 && (
-            <div className="flex items-center space-x-2 bg-primary-50 text-primary-700 px-4 py-2 rounded-lg">
-              <Bell className="w-5 h-5" />
-              <span className="font-medium">{unreadCount} new announcements</span>
-            </div>
-          )}
+          <div className="flex items-center space-x-2">
+            {unreadCount > 0 && (
+              <div className="flex items-center space-x-2 bg-primary-50 text-primary-700 px-4 py-2 rounded-lg">
+                <Bell className="w-5 h-5" />
+                <span className="font-medium">{unreadCount} new announcements</span>
+              </div>
+            )}
+
+            {/* Logout next to announcements */}
+            <button
+              onClick={() => { logout(); navigate('/'); }}
+              className="ml-3 inline-flex items-center px-3 py-2 border border-gray-200 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors duration-200"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 

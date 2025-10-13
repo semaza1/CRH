@@ -1046,7 +1046,7 @@ const AdminDashboard = () => {
                             </Badge>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(user.createdAt).toLocaleDateDate()}
+                            {new Date(user.createdAt).toLocaleDateString()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <Badge variant={user.isActive ? 'success' : 'danger'}>
