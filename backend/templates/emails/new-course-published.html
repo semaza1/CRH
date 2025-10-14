@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Course Published</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+        .button { display: inline-block; padding: 12px 30px; background: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .course-card { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6; }
+        .badge { display: inline-block; padding: 4px 12px; background: #e0e7ff; color: #3730a3; border-radius: 12px; font-size: 12px; margin: 5px 5px 0 0; }
+    </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚀 New Course Available!</h1>
+    </div>
+    <div class="content">
+      <h2>Hi {{userName}},</h2>
+      <p>We're excited to announce a new course that matches your interests!</p>
+      
+      <div class="course-card">
+        <h3>{{courseTitle}}</h3>
+        <div>
+          <span class="badge">{{category}}</span>
+          <span class="badge">{{level}}</span>
+          <span class="badge">{{price}}</span>
+        </div>
+        <p style="margin: 15px 0;">{{courseDescription}}</p>
+        <div style="color: #6b7280; font-size: 14px;">
+          <div>👨‍🏫 Instructor: {{instructor}}</div>
+          <div>⏱️ Duration: {{duration}}</div>
+        </div>
+      </div>
+
+      <p>This course is perfect for anyone looking to advance their skills in {{category}}. Don't miss out on this opportunity to learn from {{instructor}}!</p>
+
+      <center>
+        <a href="{{courseUrl}}" class="button">View Course Details</a>
+      </center>
+
+      <p style="margin-top: 30px;">
+        Best regards,<br>
+        Career Reach Hub Team
+      </p>
+
+      <p style="font-size: 12px; color: #6b7280; margin-top: 20px;">
+        Explore all courses at <a href="{{dashboardUrl}}">Browse Courses</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

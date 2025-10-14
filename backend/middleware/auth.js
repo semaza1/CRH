@@ -45,6 +45,25 @@ const adminOnly = (req, res, next) => {
   }
 };
 
+// Authorize specific roles (flexible version)
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ 
+        message: 'Not authenticated. Please log in.' 
+      });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ 
+        message: `Access denied. User role '${req.user.role}' is not authorized to access this route.` 
+      });
+    }
+
+    next();
+  };
+};
+
 // Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -55,5 +74,6 @@ const generateToken = (id) => {
 module.exports = {
   protect,
   adminOnly,
+  authorize,  // Add this export
   generateToken
 };

@@ -7,7 +7,7 @@ const emailService = require('../services/emailService');
 // @access  Public
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, phone, status } = req.body;
 
     // Validation
     if (!name || !email || !password) {
@@ -24,7 +24,11 @@ const register = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      password
+      password,
+      profile: {
+        phone: phone || undefined,
+        status: status || undefined
+      }
     });
 
     // Generate token
@@ -39,12 +43,7 @@ const register = async (req, res) => {
       success: true,
       message: 'User registered successfully',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      user: user.getPublicProfile()
     });
   } catch (error) {
     console.error('Register error:', error);

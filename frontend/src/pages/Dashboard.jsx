@@ -27,6 +27,7 @@ import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Alert from '../components/ui/Alert';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import HeroVideo from '../assets/Hero.mp4';
 
 const Dashboard = () => {
   const { user, api, logout } = useAuth();
@@ -64,8 +65,7 @@ const Dashboard = () => {
   const [applicationForm, setApplicationForm] = useState({
     coverLetter: '',
     motivation: '',
-    experience: '',
-    additionalInfo: ''
+    resumeFile: null
   });
 
   useEffect(() => {
@@ -175,8 +175,7 @@ const Dashboard = () => {
     setApplicationForm({
       coverLetter: '',
       motivation: '',
-      experience: '',
-      additionalInfo: ''
+      resumeFile: null
     });
     setShowApplicationModal(true);
     setShowResourceModal(false);
@@ -186,20 +185,34 @@ const Dashboard = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      
-      await api.post('/applications', {
+
+      const requiresResume = ['job', 'internship'].includes(selectedResource.type);
+      if (requiresResume && !applicationForm.resumeFile) {
+        showMessage('Please upload your CV for this opportunity', 'error');
+        setLoading(false);
+        return;
+      }
+
+      // We don't have file upload wired yet; include filename as placeholder
+      const payload = {
         resourceId: selectedResource._id,
         applicationData: {
-          ...applicationForm,
-          resume: 'placeholder-resume-url' // TODO: Implement file upload
+          coverLetter: applicationForm.coverLetter,
+          motivation: applicationForm.motivation,
+          resumeFilename: applicationForm.resumeFile ? applicationForm.resumeFile.name : null
         }
-      });
+      };
+
+      await api.post('/applications', payload);
 
       showMessage('Application submitted successfully!');
       setShowApplicationModal(false);
       await loadMyApplications();
       await loadAvailableResources();
-      
+
+      // reset form
+      setApplicationForm({ coverLetter: '', motivation: '', resumeFile: null });
+
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Failed to submit application';
       showMessage(errorMessage, 'error');
@@ -272,6 +285,26 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Hero banner - marketing style */}
+      <section className="relative rounded-lg overflow-hidden mb-8">
+        <video src={HeroVideo} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover opacity-70" />
+        <div className="relative z-10 bg-black bg-opacity-40 p-6 md:p-12 text-white">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
+            <div className="md:w-2/3">
+              <h2 className="text-3xl md:text-4xl font-extrabold">Advance your career with curated courses, trainings and real opportunities</h2>
+              <p className="mt-3 text-sm md:text-base text-white/90">Explore high-quality courses, internships and jobs hand-picked to help you grow. Practical, career-focused and trusted by employers.</p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button onClick={() => setResourceFilters({ ...resourceFilters, type: 'course' })} variant="primary">Explore Courses</Button>
+                <Button onClick={() => setResourceFilters({ ...resourceFilters, type: 'job' })} variant="outline">Find Jobs</Button>
+              </div>
+            </div>
+            <div className="md:w-1/3 mt-6 md:mt-0 hidden md:block">
+              {/* optional area for logo or promo */}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {message && (
         <Alert 
@@ -874,7 +907,7 @@ const Dashboard = () => {
                   <p className="text-gray-600">{selectedResource.title}</p>
                 </div>
                 <button
-                  onClick={() => setShowApplicationModal(false)}
+                  onClick={() => { setShowApplicationModal(false); setApplicationForm({ coverLetter: '', motivation: '', resumeFile: null }); }}
                   className="text-gray-400 hover:text-gray-600"
                 >
                   ✕
@@ -905,52 +938,26 @@ const Dashboard = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="form-label">Relevant Experience</label>
-                  <textarea
-                    value={applicationForm.experience}
-                    onChange={(e) => setApplicationForm({ ...applicationForm, experience: e.target.value })}
-                    className="form-input"
-                    rows="3"
-                    placeholder="Describe any relevant experience, projects, or skills..."
-                  />
-                </div>
-
-                <div>
-                  <label className="form-label">Additional Information</label>
-                  <textarea
-                    value={applicationForm.additionalInfo}
-                    onChange={(e) => setApplicationForm({ ...applicationForm, additionalInfo: e.target.value })}
-                    className="form-input"
-                    rows="2"
-                    placeholder="Any other information you'd like to share..."
-                  />
-                </div>
-
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <ExternalLink className="h-5 w-5 text-yellow-400" />
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-yellow-800">
-                        Resume Upload (Coming Soon)
-                      </h3>
-                      <div className="mt-2 text-sm text-yellow-700">
-                        <p>
-                          Resume upload functionality will be available soon. For now, please include 
-                          relevant experience in the sections above.
-                        </p>
-                      </div>
-                    </div>
+                {/* Only ask for resume for job/internship opportunities */}
+                {['job', 'internship'].includes(selectedResource.type) && (
+                  <div>
+                    <label className="form-label">Upload CV *</label>
+                    <input
+                      type="file"
+                      accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      onChange={(e) => setApplicationForm({ ...applicationForm, resumeFile: e.target.files[0] || null })}
+                      className="form-input"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Only required for job/internship opportunities. No CV required for academic/course roles.</p>
                   </div>
-                </div>
+                )}
 
                 <div className="flex justify-end space-x-4 pt-6 border-t">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setShowApplicationModal(false)}
+                    onClick={() => { setShowApplicationModal(false); setApplicationForm({ coverLetter: '', motivation: '', resumeFile: null }); }}
                   >
                     Cancel
                   </Button>

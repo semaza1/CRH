@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson Completion</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+    .button { display: inline-block; padding: 12px 30px; background: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+    .progress-bar { width: 100%; height: 30px; background: #e5e7eb; border-radius: 15px; overflow: hidden; margin: 20px 0; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #34d399, #10b981); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+    .stats { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>✅ Lesson Completed!</h1>
+    </div>
+    <div class="content">
+      <h2>Great Job, {{userName}}!</h2>
+      <p>You've successfully completed <strong>{{lessonTitle}}</strong> in the course <strong>{{courseTitle}}</strong>.</p>
+      
+      <div class="stats">
+        <h3>Your Progress:</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: {{progressPercentage}}%">
+            {{progressPercentage}}%
+          </div>
+        </div>
+        <p>Lessons completed: <strong>{{completedLessons}}/{{totalLessons}}</strong></p>
+      </div>
+
+      <p>Keep up the excellent work! You're making great progress towards completing this course.</p>
+
+      <center>
+        <a href="{{nextLessonUrl}}" class="button">Continue to Next Lesson</a>
+      </center>
+
+      <p style="margin-top: 30px;">
+        Best regards,<br>
+        Career Reach Hub Team
+      </p>
+
+      <p style="font-size: 12px; color: #6b7280; margin-top: 20px;">
+        View course at <a href="{{courseUrl}}">{{courseTitle}}</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

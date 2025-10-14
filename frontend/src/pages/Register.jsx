@@ -12,7 +12,9 @@ const Register = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    phone: '', // optional - include country code e.g. +254700000000
+    status: 'needs_job' // default status
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -21,6 +23,8 @@ const Register = () => {
   const { register, loading, error } = useAuth();
 
   const { name, email, password, confirmPassword } = formData;
+
+  const { phone, status } = formData;
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -45,7 +49,13 @@ const Register = () => {
       return;
     }
 
-    const result = await register({ name, email, password });
+    // Basic phone suggestion check (not required)
+    if (phone && !phone.match(/^\+?[0-9]{7,15}$/)) {
+      setLocalError('Please provide phone with country code, e.g. +254700000000 (optional)');
+      return;
+    }
+
+    const result = await register({ name, email, password, phone, status });
     
     if (!result.success) {
       setLocalError(result.message);
@@ -116,6 +126,35 @@ const Register = () => {
                 className="form-input pl-10"
                 required
               />
+            </div>
+
+            {/* Phone (optional) */}
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="tel"
+                name="phone"
+                value={phone}
+                onChange={onChange}
+                placeholder="Phone (include country code, optional) e.g. +254700000000"
+                className="form-input pl-10"
+              />
+            </div>
+
+            {/* Status (Graduate / Needs job / Looking for further education) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">I'm a</label>
+              <select
+                name="status"
+                value={status}
+                onChange={onChange}
+                className="form-input"
+              >
+                <option value="graduate">Graduate</option>
+                <option value="needs_job">Needs Job</option>
+                <option value="further_education">Looking for Further Education</option>
+                <option value="other">Other</option>
+              </select>
             </div>
 
             <div className="relative">

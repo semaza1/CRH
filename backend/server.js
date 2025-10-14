@@ -22,6 +22,10 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/resources', require('./routes/resources'));
 app.use('/api/applications', require('./routes/applications'));
 app.use('/api/announcements', require('./routes/announcements'));
+app.use('/api/courses', require('./routes/courseRoutes'));
+app.use('/api/lessons', require('./routes/lessonRoutes'));
+app.use('/api/quizzes', require('./routes/quizRoutes'));
+app.use('/api/certificates', require('./routes/certificateRoutes'));
 
 // Test route
 app.get('/', (req, res) => {
@@ -33,7 +37,11 @@ app.get('/', (req, res) => {
       users: '/api/users',
       resources: '/api/resources',
       applications: '/api/applications',
-      announcements: '/api/announcements'
+      announcements: '/api/announcements',
+      courses: '/api/courses',
+      lessons: '/api/lessons',
+      quizzes: '/api/quizzes',
+      certificates: '/api/certificates'
     }
   });
 });

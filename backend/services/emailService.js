@@ -396,7 +396,223 @@ class EmailService {
       return { success: false, message: error.message };
     }
   }
+
+  // Send course enrollment confirmation email
+async sendCourseEnrollmentEmail(user, course) {
+  if (!this.transporter) return { success: false, message: 'Email service not configured' };
+
+  try {
+    const variables = {
+      userName: user.name,
+      courseTitle: course.title,
+      courseDescription: course.description,
+      instructor: course.instructor?.name || 'Our expert instructor',
+      totalLessons: course.totalLessons || 'Multiple',
+      duration: course.duration ? `${course.duration} hours` : 'Self-paced',
+      courseUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/courses/${course._id}`,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/my-courses`
+    };
+
+    const html = await this.loadTemplate('course-enrollment', variables);
+
+    const mailOptions = {
+      from: {
+        name: 'Career Reach Hub',
+        address: process.env.EMAIL_FROM || process.env.EMAIL_USER
+      },
+      to: user.email,
+      subject: `🎓 Welcome to ${course.title}!`,
+      html,
+      text: `Congratulations ${user.name}! You've successfully enrolled in ${course.title}. Start learning at ${variables.courseUrl}`
+    };
+
+    const result = await this.transporter.sendMail(mailOptions);
+    console.log('Course enrollment email sent successfully:', result.messageId);
+    
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('Failed to send course enrollment email:', error.message);
+    return { success: false, message: error.message };
+  }
 }
+
+// Send new course published notification
+async sendNewCoursePublishedEmail(users, course) {
+  if (!this.transporter) return { success: false, message: 'Email service not configured' };
+  
+  const results = [];
+  
+  for (const user of users) {
+    try {
+      // Check if user has course notifications enabled
+      if (!user.subscriptions?.newResources) continue;
+
+      const variables = {
+        userName: user.name,
+        courseTitle: course.title,
+        courseDescription: course.description,
+        category: course.category,
+        level: course.level,
+        instructor: course.instructor?.name || 'Expert instructor',
+        duration: course.duration ? `${course.duration} hours` : 'Self-paced',
+        price: course.isPaid ? `$${course.price}` : 'Free',
+        courseUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/courses/${course._id}`,
+        dashboardUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/courses`
+      };
+
+      const html = await this.loadTemplate('new-course-published', variables);
+
+      const mailOptions = {
+        from: {
+          name: 'Career Reach Hub',
+          address: process.env.EMAIL_FROM || process.env.EMAIL_USER
+        },
+        to: user.email,
+        subject: `🚀 New Course Available: ${course.title}`,
+        html,
+        text: `New ${course.level} level course in ${course.category}: ${course.title}. Enroll now at ${variables.courseUrl}`
+      };
+
+      const result = await this.transporter.sendMail(mailOptions);
+      results.push({ success: true, email: user.email, messageId: result.messageId });
+      
+    } catch (error) {
+      console.error(`Failed to send new course email to ${user.email}:`, error.message);
+      results.push({ success: false, email: user.email, error: error.message });
+    }
+  }
+
+  console.log(`New course emails sent to ${results.filter(r => r.success).length}/${users.length} users`);
+  return results;
+}
+
+// Send lesson completion email
+async sendLessonCompletionEmail(user, lesson, course, progress) {
+  if (!this.transporter) return { success: false, message: 'Email service not configured' };
+
+  try {
+    const variables = {
+      userName: user.name,
+      lessonTitle: lesson.title,
+      courseTitle: course.title,
+      progressPercentage: progress.progressPercentage,
+      completedLessons: progress.completedLessons.length,
+      totalLessons: await require('../models/Lesson').countDocuments({ course: course._id, status: 'published' }),
+      nextLessonUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/courses/${course._id}/lessons`,
+      courseUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/courses/${course._id}`
+    };
+
+    const html = await this.loadTemplate('lesson-completion', variables);
+
+    const mailOptions = {
+      from: {
+        name: 'Career Reach Hub',
+        address: process.env.EMAIL_FROM || process.env.EMAIL_USER
+      },
+      to: user.email,
+      subject: `✅ Lesson Completed: ${lesson.title}`,
+      html,
+      text: `Great job ${user.name}! You've completed ${lesson.title} in ${course.title}. Your progress: ${progress.progressPercentage}%`
+    };
+
+    const result = await this.transporter.sendMail(mailOptions);
+    console.log('Lesson completion email sent successfully:', result.messageId);
+    
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('Failed to send lesson completion email:', error.message);
+    return { success: false, message: error.message };
+  }
+}
+
+// Send course completion and certificate email
+async sendCourseCompletionEmail(user, course, certificate) {
+  if (!this.transporter) return { success: false, message: 'Email service not configured' };
+
+  try {
+    const variables = {
+      userName: user.name,
+      courseTitle: course.title,
+      completionDate: new Date(certificate.completionDate).toLocaleDateString(),
+      certificateId: certificate.certificateId,
+      certificateUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/certificates/${certificate._id}`,
+      verificationUrl: certificate.verificationUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify/${certificate.certificateId}`,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/my-courses`,
+      score: certificate.score ? `${certificate.score}%` : 'N/A'
+    };
+
+    const html = await this.loadTemplate('course-completion', variables);
+
+    const mailOptions = {
+      from: {
+        name: 'Career Reach Hub',
+        address: process.env.EMAIL_FROM || process.env.EMAIL_USER
+      },
+      to: user.email,
+      subject: `🎉 Congratulations! You've Completed ${course.title}`,
+      html,
+      text: `Congratulations ${user.name}! You've successfully completed ${course.title}. Download your certificate at ${variables.certificateUrl}`
+    };
+
+    const result = await this.transporter.sendMail(mailOptions);
+    console.log('Course completion email sent successfully:', result.messageId);
+    
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('Failed to send course completion email:', error.message);
+    return { success: false, message: error.message };
+  }
+}
+
+// Send quiz result email
+async sendQuizResultEmail(user, quiz, attempt, lesson, course) {
+  if (!this.transporter) return { success: false, message: 'Email service not configured' };
+
+  try {
+    const variables = {
+      userName: user.name,
+      quizTitle: quiz.title,
+      lessonTitle: lesson.title,
+      courseTitle: course.title,
+      score: attempt.score,
+      totalPoints: attempt.totalPoints,
+      percentage: attempt.percentage.toFixed(1),
+      passed: attempt.passed,
+      passingScore: quiz.passingScore,
+      attemptNumber: attempt.attemptNumber,
+      maxAttempts: quiz.attempts,
+      retakeUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/courses/${course._id}/lessons/${lesson._id}/quiz`,
+      lessonUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/courses/${course._id}/lessons/${lesson._id}`
+    };
+
+    const html = await this.loadTemplate('quiz-result', variables);
+
+    const subject = attempt.passed 
+      ? `✅ Quiz Passed: ${quiz.title}` 
+      : `📝 Quiz Results: ${quiz.title}`;
+
+    const mailOptions = {
+      from: {
+        name: 'Career Reach Hub',
+        address: process.env.EMAIL_FROM || process.env.EMAIL_USER
+      },
+      to: user.email,
+      subject,
+      html,
+      text: `Quiz Results - ${quiz.title}: You scored ${attempt.percentage}% (${attempt.score}/${attempt.totalPoints} points). ${attempt.passed ? 'Congratulations!' : 'Keep learning and try again!'}`
+    };
+
+    const result = await this.transporter.sendMail(mailOptions);
+    console.log('Quiz result email sent successfully:', result.messageId);
+    
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('Failed to send quiz result email:', error.message);
+    return { success: false, message: error.message };
+  }
+}
+
+} // end class EmailService
 
 // Create singleton instance
 const emailService = new EmailService();

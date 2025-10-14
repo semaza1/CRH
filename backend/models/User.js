@@ -51,6 +51,11 @@ const UserSchema = new mongoose.Schema({
       type: String,
       maxlength: [15, 'Phone number cannot exceed 15 characters']
     },
+    status: {
+      type: String,
+      enum: ['graduate', 'needs_job', 'further_education', 'other'],
+      default: 'needs_job'
+    },
     education: {
       type: String,
       maxlength: [100, 'Education cannot exceed 100 characters']
