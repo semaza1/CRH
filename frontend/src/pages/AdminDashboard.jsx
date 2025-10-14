@@ -20,7 +20,11 @@ import {
   User,
   Home,
   LogOut,
-  Menu
+  Menu,
+  BookOpen,
+  PlayCircle,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -75,6 +79,25 @@ const AdminDashboard = () => {
     tags: ''
   });
 
+  // Courses state
+  const [courses, setCourses] = useState([]);
+  const [showCourseModal, setShowCourseModal] = useState(false);
+  const [editingCourse, setEditingCourse] = useState(null);
+  const [courseForm, setCourseForm] = useState({
+    title: '',
+    description: '',
+    category: 'technology',
+    level: 'beginner',
+    duration: '',
+    price: 0,
+    isPaid: false,
+    thumbnail: '',
+    tags: '',
+    prerequisites: '',
+    learningOutcomes: '',
+    status: 'draft'
+  });
+
   // Announcements state
   const [announcements, setAnnouncements] = useState([]);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
@@ -102,6 +125,7 @@ const AdminDashboard = () => {
   const sidebarItems = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'resources', label: 'Resources', icon: FileText },
+    { id: 'courses', label: 'Courses', icon: BookOpen },
     { id: 'applications', label: 'Applications', icon: Users },
     { id: 'announcements', label: 'Announcements', icon: MessageSquare },
     { id: 'users', label: 'Users', icon: User }
@@ -119,7 +143,8 @@ const AdminDashboard = () => {
         loadResources(),
         loadApplications(),
         loadUsers(),
-        loadAnnouncements()
+        loadAnnouncements(),
+        loadCourses()
       ]);
     } catch (error) {
       showMessage('Failed to load admin data', 'error');
@@ -162,6 +187,28 @@ const AdminDashboard = () => {
     }
   };
 
+  const loadCourses = async () => {
+    try {
+      setLoading(true);
+      // Try multiple endpoints to see which one works
+      const response = await api.get('/courses');
+      console.log('Courses API Response:', response.data);
+      console.log('Full Response:', response);
+      
+      const coursesData = response.data.data || response.data.courses || response.data || [];
+      console.log('Courses Data:', coursesData);
+      console.log('Courses Array Length:', coursesData.length);
+      
+      setCourses(Array.isArray(coursesData) ? coursesData : []);
+    } catch (error) {
+      console.error('Failed to load courses:', error);
+      console.error('Error response:', error.response);
+      showMessage('Failed to load courses: ' + (error.response?.data?.message || error.message), 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadApplications = async () => {
     try {
       const response = await api.get('/applications?limit=50');
@@ -186,19 +233,138 @@ const AdminDashboard = () => {
       const allAnnouncements = response.data.data || [];
       setAnnouncements(allAnnouncements);
       
-      // Get recent announcements (last 7 days) for notifications
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       
       const recent = allAnnouncements.filter(announcement => 
         new Date(announcement.createdAt) >= sevenDaysAgo
-      ).slice(0, 5); // Show only latest 5
+      ).slice(0, 5);
       
       setRecentAnnouncements(recent);
       setUnreadNotifications(recent.length);
     } catch (error) {
       console.error('Failed to load announcements:', error);
     }
+  };
+
+  // Course CRUD Operations
+  const handleCourseSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+
+      const courseData = {
+        ...courseForm,
+        duration: parseFloat(courseForm.duration),
+        price: parseFloat(courseForm.price),
+        tags: courseForm.tags.split(',').map(t => t.trim()).filter(t => t),
+        prerequisites: courseForm.prerequisites.split(',').map(p => p.trim()).filter(p => p),
+        learningOutcomes: courseForm.learningOutcomes.split(',').map(l => l.trim()).filter(l => l)
+      };
+
+      console.log('Submitting course data:', courseData); // Debug log
+
+      if (editingCourse) {
+        await api.put(`/courses/${editingCourse._id}`, courseData);
+        showMessage('Course updated successfully');
+      } else {
+        const response = await api.post('/courses', courseData);
+        console.log('Course created:', response.data); // Debug log
+        showMessage('Course created successfully');
+      }
+
+      setShowCourseModal(false);
+      resetCourseForm();
+      
+      // Wait a bit before reloading to ensure database update
+      setTimeout(async () => {
+        await loadCourses();
+      }, 500);
+    } catch (error) {
+      console.error('Course submit error:', error);
+      showMessage(error.response?.data?.message || 'Failed to save course', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditCourse = (course) => {
+    setEditingCourse(course);
+    setCourseForm({
+      title: course.title || '',
+      description: course.description || '',
+      category: course.category || 'technology',
+      level: course.level || 'beginner',
+      duration: course.duration?.toString() || '',
+      price: course.price?.toString() || '0',
+      isPaid: course.isPaid || false,
+      thumbnail: course.thumbnail || '',
+      tags: Array.isArray(course.tags) ? course.tags.join(', ') : '',
+      prerequisites: Array.isArray(course.prerequisites) ? course.prerequisites.join(', ') : '',
+      learningOutcomes: Array.isArray(course.learningOutcomes) ? course.learningOutcomes.join(', ') : '',
+      status: course.status || 'draft'
+    });
+    setShowCourseModal(true);
+  };
+
+  const handleDeleteCourse = async (courseId) => {
+    if (!window.confirm('Are you sure you want to delete this course?')) return;
+
+    try {
+      await api.delete(`/courses/${courseId}`);
+      showMessage('Course deleted successfully');
+      await loadCourses();
+    } catch (error) {
+      showMessage(error.response?.data?.message || 'Failed to delete course', 'error');
+    }
+  };
+
+  const handlePublishCourse = async (courseId) => {
+    try {
+      await api.put(`/courses/${courseId}/publish`);
+      showMessage('Course published successfully! Users have been notified.');
+      await loadCourses();
+    } catch (error) {
+      showMessage(error.response?.data?.message || 'Failed to publish course', 'error');
+    }
+  };
+
+  const resetCourseForm = () => {
+    setCourseForm({
+      title: '',
+      description: '',
+      category: 'technology',
+      level: 'beginner',
+      duration: '',
+      price: 0,
+      isPaid: false,
+      thumbnail: '',
+      tags: '',
+      prerequisites: '',
+      learningOutcomes: '',
+      status: 'draft'
+    });
+    setEditingCourse(null);
+  };
+
+  const getCategoryColor = (category) => {
+    const colors = {
+      technology: 'bg-blue-100 text-blue-800',
+      business: 'bg-green-100 text-green-800',
+      design: 'bg-purple-100 text-purple-800',
+      marketing: 'bg-orange-100 text-orange-800',
+      'personal-development': 'bg-pink-100 text-pink-800'
+    };
+    return colors[category] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getLevelColor = (level) => {
+    const colors = {
+      beginner: 'bg-green-100 text-green-800',
+      intermediate: 'bg-yellow-100 text-yellow-800',
+      advanced: 'bg-red-100 text-red-800'
+    };
+    return colors[level] || 'bg-gray-100 text-gray-800';
   };
 
   // Resource CRUD Operations
@@ -320,7 +486,6 @@ const AdminDashboard = () => {
       resetAnnouncementForm();
       await loadAnnouncements();
       
-      // Increment unread notifications when new announcement is created
       setUnreadNotifications(prev => prev + 1);
       
     } catch (error) {
@@ -387,21 +552,17 @@ const AdminDashboard = () => {
     }
   };
 
-  // Handle notification click
   const handleNotificationClick = () => {
     setNotificationOpen(!notificationOpen);
     if (!notificationOpen) {
-      // Mark notifications as read when dropdown opens
       setUnreadNotifications(0);
     }
   };
 
-  // Close notification dropdown when clicking outside
   const closeNotificationDropdown = () => {
     setNotificationOpen(false);
   };
 
-  // Logout handler
   const handleLogout = async () => {
     try {
       await logout();
@@ -510,6 +671,7 @@ const AdminDashboard = () => {
                 <h1 className="text-2xl font-bold text-slate-800">
                   {activeTab === 'overview' && 'Dashboard Overview'}
                   {activeTab === 'resources' && 'Resource Management'}
+                  {activeTab === 'courses' && 'Course Management'}
                   {activeTab === 'applications' && 'Application Reviews'}
                   {activeTab === 'users' && 'User Management'}
                   {activeTab === 'announcements' && 'Announcements'}
@@ -517,6 +679,7 @@ const AdminDashboard = () => {
                 <p className="text-sm text-gray-600 mt-1">
                   {activeTab === 'overview' && 'Monitor your platform performance and statistics'}
                   {activeTab === 'resources' && 'Create and manage job opportunities and resources'}
+                  {activeTab === 'courses' && 'Create and manage your courses'}
                   {activeTab === 'applications' && 'Review and manage user applications'}
                   {activeTab === 'users' && 'Manage user accounts and permissions'}
                   {activeTab === 'announcements' && 'Send announcements and notifications to users'}
@@ -550,20 +713,17 @@ const AdminDashboard = () => {
                 {/* Notification Dropdown */}
                 {notificationOpen && (
                   <>
-                    {/* Backdrop */}
                     <div 
                       className="fixed inset-0 z-10" 
                       onClick={closeNotificationDropdown}
                     ></div>
                     
-                    {/* Dropdown Content */}
                     <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
                       <div className="p-4 border-b border-gray-200">
                         <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
                       </div>
                       
                       <div className="max-h-96 overflow-y-auto">
-                        {/* Pending Applications */}
                         {stats.pendingApplications > 0 && (
                           <div className="p-4 border-b border-gray-100 hover:bg-gray-50">
                             <div className="flex items-center gap-3">
@@ -589,7 +749,6 @@ const AdminDashboard = () => {
                           </div>
                         )}
 
-                        {/* Recent Announcements */}
                         {recentAnnouncements.length > 0 ? (
                           recentAnnouncements.map((announcement) => (
                             <div key={announcement._id} className="p-4 border-b border-gray-100 hover:bg-gray-50">
@@ -626,7 +785,6 @@ const AdminDashboard = () => {
                         )}
                       </div>
                       
-                      {/* Footer */}
                       <div className="p-3 border-t border-gray-200">
                         <button 
                           className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium"
@@ -666,18 +824,6 @@ const AdminDashboard = () => {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <Users className="h-8 w-8 text-blue-600" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-500">Total Users</p>
-                      <p className="text-2xl font-semibold text-gray-900">{stats.totalUsers}</p>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <FileText className="h-8 w-8 text-green-600" />
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-500">Total Resources</p>
@@ -750,6 +896,116 @@ const AdminDashboard = () => {
                   </div>
                 </Card.Body>
               </Card>
+            </div>
+          )}
+
+          {/* Courses Tab */}
+          {activeTab === 'courses' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Course Management</h2>
+                  <p className="text-gray-600 mt-1">Create and manage your courses</p>
+                </div>
+                <Button onClick={() => { resetCourseForm(); setShowCourseModal(true); }}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Course
+                </Button>
+              </div>
+
+              {/* Course Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {courses.map(course => (
+                  <Card key={course._id} className="hover:shadow-lg transition-shadow">
+                    <Card.Header>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            {course.title}
+                          </h3>
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            <span className={`px-2 py-1 text-xs rounded ${getCategoryColor(course.category)}`}>
+                              {course.category}
+                            </span>
+                            <span className={`px-2 py-1 text-xs rounded ${getLevelColor(course.level)}`}>
+                              {course.level}
+                            </span>
+                            <Badge variant={
+                              course.status === 'published' ? 'success' : 
+                              course.status === 'draft' ? 'warning' : 'gray'
+                            }>
+                              {course.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </Card.Header>
+                    <Card.Body>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        {course.description}
+                      </p>
+                      
+                      <div className="space-y-2 text-sm text-gray-600 mb-4">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          <span>{course.totalEnrollments || 0} students enrolled</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <PlayCircle className="w-4 h-4" />
+                          <span>{course.duration} hours</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4" />
+                          <span>{course.isPaid ? `${course.price}` : 'Free'}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditCourse(course)}
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
+                        
+                        {course.status === 'draft' && (
+                          <Button
+                            size="sm"
+                            variant="success"
+                            onClick={() => handlePublishCourse(course._id)}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Publish
+                          </Button>
+                        )}
+                        
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => handleDeleteCourse(course._id)}
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                ))}
+              </div>
+
+              {courses.length === 0 && (
+                <Card className="text-center py-12">
+                  <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No courses yet</h3>
+                  <p className="text-gray-600 mb-6">Create your first course to get started.</p>
+                  <Button onClick={() => setShowCourseModal(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Course
+                  </Button>
+                </Card>
+              )}
             </div>
           )}
 
@@ -1080,6 +1336,222 @@ const AdminDashboard = () => {
           )}
         </main>
       </div>
+
+      {/* Course Modal */}
+      {showCourseModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {editingCourse ? 'Edit Course' : 'Create New Course'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowCourseModal(false);
+                    resetCourseForm();
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCourseSubmit} className="space-y-6">
+                {/* Basic Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Course Title *
+                    </label>
+                    <input
+                      type="text"
+                      value={courseForm.title}
+                      onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Description *
+                    </label>
+                    <textarea
+                      value={courseForm.description}
+                      onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows="4"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Category *
+                    </label>
+                    <select
+                      value={courseForm.category}
+                      onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="technology">Technology</option>
+                      <option value="business">Business</option>
+                      <option value="design">Design</option>
+                      <option value="marketing">Marketing</option>
+                      <option value="personal-development">Personal Development</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Level *
+                    </label>
+                    <select
+                      value={courseForm.level}
+                      onChange={(e) => setCourseForm({ ...courseForm, level: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="beginner">Beginner</option>
+                      <option value="intermediate">Intermediate</option>
+                      <option value="advanced">Advanced</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Duration (hours) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={courseForm.duration}
+                      onChange={(e) => setCourseForm({ ...courseForm, duration: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Status *
+                    </label>
+                    <select
+                      value={courseForm.status}
+                      onChange={(e) => setCourseForm({ ...courseForm, status: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={courseForm.isPaid}
+                          onChange={(e) => setCourseForm({ ...courseForm, isPaid: e.target.checked })}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Paid Course</span>
+                      </label>
+
+                      {courseForm.isPaid && (
+                        <div className="flex-1">
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={courseForm.price}
+                            onChange={(e) => setCourseForm({ ...courseForm, price: e.target.value })}
+                            placeholder="Price"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Thumbnail URL
+                    </label>
+                    <input
+                      type="url"
+                      value={courseForm.thumbnail}
+                      onChange={(e) => setCourseForm({ ...courseForm, thumbnail: e.target.value })}
+                      placeholder="https://example.com/image.jpg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tags (comma separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={courseForm.tags}
+                      onChange={(e) => setCourseForm({ ...courseForm, tags: e.target.value })}
+                      placeholder="react, javascript, web development"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Prerequisites (comma separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={courseForm.prerequisites}
+                      onChange={(e) => setCourseForm({ ...courseForm, prerequisites: e.target.value })}
+                      placeholder="Basic HTML, CSS knowledge"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Learning Outcomes (comma separated)
+                    </label>
+                    <textarea
+                      value={courseForm.learningOutcomes}
+                      onChange={(e) => setCourseForm({ ...courseForm, learningOutcomes: e.target.value })}
+                      placeholder="Build web applications, Understand React hooks, Deploy projects"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows="3"
+                    />
+                  </div>
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex justify-end space-x-4 pt-6 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowCourseModal(false);
+                      resetCourseForm();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" loading={loading}>
+                    {editingCourse ? 'Update Course' : 'Create Course'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Resource Modal */}
       {showResourceModal && (

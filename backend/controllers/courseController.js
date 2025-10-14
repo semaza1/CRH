@@ -13,7 +13,18 @@ const getCourses = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    let query = { status: 'published' };
+    let query = {};
+
+    // Only filter by published status for non-admin users
+    // If user is admin or explicitly requesting all courses, show all
+    if (req.query.includeAll !== 'true' && (!req.user || req.user.role !== 'admin')) {
+      query.status = 'published';
+    }
+
+    // Filter by status if explicitly provided
+    if (req.query.status) {
+      query.status = req.query.status;
+    }
 
     // Filter by category
     if (req.query.category) {

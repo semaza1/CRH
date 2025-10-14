@@ -19,6 +19,17 @@ import {
   Send
 } from 'lucide-react';
 
+import Kayitare from '../assets/team_members/kayitare.jpg';
+import Jackson from '../assets/team_members/jackson.jpg';
+import Hodali from '../assets/team_members/hodali.jpg';
+import JohnKelly from '../assets/team_members/johnKelly.jpg';
+import Natasha from '../assets/team_members/natasha.jpg';
+import Steven from '../assets/team_members/steven.jpg';
+import Pacific from '../assets/team_members/pacific.jpg';
+import Eddy from '../assets/team_members/eddy.jpg';
+import Esther from '../assets/team_members/esther.jpg';
+import Emmanuel from '../assets/team_members/emmanuel.png';
+
 const Home = () => {
   const [email, setEmail] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -64,36 +75,84 @@ const Home = () => {
 
   const teamMembers = [
     {
-      name: 'Alex Thompson',
-      role: 'CEO & Founder',
-      image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face',
-      email: 'alex@careerreachhub.com',
-      phone: '+1 (555) 123-4567',
-      linkedin: 'https://linkedin.com/in/alexthompson'
+      name: 'Habiyaremye Kayitare',
+      role: 'Resources & Finance Management',
+      image: Kayitare,
+      email: 'habiyaremye.kayitare@gmail.com',
+      phone: '+250 781 882 027',
+      linkedin: 'https://linkedin.com/in/habiyaremye'
     },
     {
-      name: 'Maria Garcia',
-      role: 'Head of Mentorship',
-      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face',
-      email: 'maria@careerreachhub.com',
-      phone: '+1 (555) 234-5678',
-      linkedin: 'https://linkedin.com/in/mariagarcia'
+      name: 'Muheto Jackson',
+      role: 'Leadership Team',
+      image: Jackson,
+      email: 'shyakamuhetojackson@gmail.com',
+      phone: '+250 794 395 653',
+      linkedin: 'https://www.linkedin.com/in/jackson-muheto-00220923b'
     },
     {
-      name: 'James Wilson',
-      role: 'Director of Partnerships',
-      image: 'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=200&h=200&fit=crop&crop=face',
-      email: 'james@careerreachhub.com',
-      phone: '+1 (555) 345-6789',
-      linkedin: 'https://linkedin.com/in/jameswilson'
+      name: 'Nkurunziza Hodali',
+      role: 'Social Media & Communications',
+      image: Hodali,
+      email: 'nkurunzizahodar@gmail.com',
+      phone: '+1 (613) 617-4504',
+      linkedin: 'https://linkedin.com/in/nkurunzizahodali'
     },
     {
-      name: 'Lisa Chen',
-      role: 'Head of Learning',
-      image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face',
-      email: 'lisa@careerreachhub.com',
+      name: 'John Kelly',
+      role: 'Leadership',
+      image: JohnKelly,
+      email: 'john@careerreachhub.com',
       phone: '+1 (555) 456-7890',
-      linkedin: 'https://linkedin.com/in/lisachen'
+      linkedin: 'https://linkedin.com/in/johnkelly'
+    },
+    {
+      name: 'Natasha Agarwal',
+      role: 'Resources & Finance',
+      image: Natasha,
+      email: 'natashaa2099@gmail.com',
+      phone: '+1 (239) 564-8488',
+      linkedin: 'https://linkedin.com/in/natashaaragarwal'
+    },
+    {
+      name: 'Elisha Steven',
+      role: 'Software Engineer',
+      image: Steven,
+      email: 'elishatumusiime@gmail.com',
+      phone: '+250 791 892 784',
+      linkedin: 'https://linkedin.com/in/elishasteven'
+    },
+    {
+      name: 'Ishimwe Pacific',
+      role: 'Partnerships Manager',
+      image: Pacific,
+      email: 'ishimwe@brandeis.edu',
+      phone: '+1 (857) 961-6777',
+      linkedin: 'https://linkedin.com/in/ishimwepacific'
+    },
+    {
+      name: 'Eddy Mutoniwase',
+      role: 'Leadership & Marketing',
+      image: Eddy,
+      email: 'eddymutoniwase@gmail.com',
+      phone: '+250 785 938 080',
+      linkedin: 'https://linkedin.com/in/eddymutoniwase'
+    },
+    {
+      name: 'Esther Mukakamanzi',
+      role: 'Resources & Finance Management',
+      image: Esther,
+      email: 'esthermukakamanzi6@gmail.com',
+      phone: '+250789 115 408',
+      linkedin: 'https://linkedin.com/in/esthermukakamanzi'
+    },
+    {
+      name: 'Emmanuel Semaza',
+      role: 'Full Stack Developer',
+      image: Emmanuel,
+      email: 'semaza@asyv.org',
+      phone: '+250 798 721 418',
+      linkedin: 'https://linkedin.com/in/emmanuelsemaza'
     }
   ];
 
@@ -625,9 +684,12 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="flex overflow-x-auto space-x-6 pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {teamMembers.map((member, index) => (
-              <div key={index} className="text-center p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 group">
+              <div 
+                key={index} 
+                className="flex-shrink-0 w-72 text-center p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 group snap-center"
+              >
                 <div className="relative mb-6">
                   <img 
                     src={member.image} 
@@ -635,13 +697,10 @@ const Home = () => {
                     className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-gray-200 group-hover:border-blue-300 transition-colors duration-300"
                   />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  {member.name}
-                </h3>
-                <p className="text-blue-600 font-medium mb-4">
-                  {member.role}
-                </p>
-                
+
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h3>
+                <p className="text-blue-600 font-medium mb-4">{member.role}</p>
+
                 <div className="space-y-2 text-sm text-gray-600 mb-6">
                   <div className="flex items-center justify-center">
                     <Mail className="w-4 h-4 mr-2" />
@@ -656,7 +715,7 @@ const Home = () => {
                     </a>
                   </div>
                 </div>
-                
+
                 <a 
                   href={member.linkedin}
                   target="_blank"
@@ -668,6 +727,7 @@ const Home = () => {
               </div>
             ))}
           </div>
+
         </div>
       </section>
 

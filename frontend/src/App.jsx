@@ -11,6 +11,8 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
+import Courses from './pages/Courses';
+import MyCourses from './pages/MyCourses';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -98,6 +100,16 @@ const AppContent = () => {
               <Register />
             </PublicRoute>
           }
+        />
+        
+        <Route path="/courses" element={<Courses />} />
+        <Route 
+          path="/my-courses" 
+          element={
+            <ProtectedRoute>
+              <MyCourses />
+            </ProtectedRoute>
+          } 
         />
 
         {/* Protected Routes */}

@@ -12,8 +12,8 @@ const {
 } = require('../controllers/courseController');
 const { protect, authorize } = require('../middleware/auth');
 
-// Public routes
-router.get('/', getCourses);
+// Public routes (but getCourses will check if user is authenticated/admin)
+router.get('/', protect, getCourses);  // Changed: Added protect middleware
 router.get('/:id', getCourse);
 
 // Protected routes
