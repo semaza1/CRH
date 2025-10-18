@@ -295,7 +295,7 @@ const Dashboard = () => {
               <h2 className="text-3xl md:text-4xl font-extrabold">Advance your career with curated courses, trainings and real opportunities</h2>
               <p className="mt-3 text-sm md:text-base text-white/90">Explore high-quality courses, internships and jobs hand-picked to help you grow. Practical, career-focused and trusted by employers.</p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button onClick={() => setResourceFilters({ ...resourceFilters, type: 'course' })} variant="primary">Explore Courses</Button>
+                <Button onClick={() => navigate('/courses')} variant="primary">Explore Courses</Button>
                 <Button onClick={() => setResourceFilters({ ...resourceFilters, type: 'job' })} variant="outline">Find Jobs</Button>
               </div>
             </div>

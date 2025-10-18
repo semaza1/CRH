@@ -167,7 +167,7 @@ const Courses = () => {
             {course.thumbnail && (
               <div className="h-48 overflow-hidden rounded-t-lg">
                 <img 
-                  src={course.thumbnail} 
+                  src={course.thumbnail}
                   alt={course.title}
                   className="w-full h-full object-cover"
                 />
